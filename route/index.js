@@ -14,6 +14,7 @@ router.get("/", controller.main);
 router.get("/userset", controller.user.set);
 router.get("/userget", controller.user.get);
 router.post("/xxs/login", controller.login.login);
+router.post("/xxs/publish", controller.publish.publish);
 
 
 module.exports = router;

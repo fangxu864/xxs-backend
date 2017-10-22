@@ -5,3 +5,8 @@ exports.MONGODB = {
 	username: argv.db_username || 'DB_username',
 	password: argv.db_password || 'DB_password'
 }
+
+exports.xxsInfo = {
+	appId: "wx3ccc43b68911b51a",
+	secret: "ab0cb5d81b60839932929d6ec70e57f9"
+}

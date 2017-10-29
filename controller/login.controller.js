@@ -4,6 +4,9 @@ var config = require("../config/index.js");
 const redis = require("../redis");
 const Util = require("../utils/index.js");
 
+var userModel = require("../model/user.model.js");
+
+
 
 
 
@@ -21,18 +24,40 @@ function getOpenId(code) {
 }
 
 async function login(ctx, next) {
-    console.log(ctx.request.body);
     let body = ctx.request.body;
     let code = body.code;
-    let resultStr = await getOpenId(code);
-    let resultObj = JSON.parse(resultStr);
-
+    var resultStr = await getOpenId(code);
+    var resultObj = JSON.parse(resultStr);
     //如果存在session_key,说明登录成功
     if (resultObj.session_key) {
+        var userModelRes = await userModel.find({ "wxOpenId": resultObj.openid },{userId:1});
+        if (Util.judgeTrue(userModelRes)) {
+
+            resultObj["userId"] = userModelRes[0]["userId"];
+            resultStr = JSON.stringify(resultObj);
+        } else {
+            var user = new userModel({
+                wxOpenId: resultObj.openid
+            });
+
+            var saveRes = await user.save();
+            if (saveRes) {
+                let userModelRes = await userModel.find({ "wxOpenId": resultObj.openid }, { usrId: 1 });
+                if (Util.judgeTrue(userModelRes)) {
+                    resultObj["userId"] = userModelRes[0]["userId"];
+                    resultStr = JSON.stringify(resultObj);
+                } 
+            }
+        }
+
+
+
         //生成3rd_session_key就是redisKey
         var redisKey = Util.md5Decode(resultStr);
+
+
         let setResult = await redis.set(redisKey, resultStr, 'EX', 7200);
-        console.log(setResult);
+
         Util.returnApi(ctx, {
             code: 200,
             data: {
@@ -42,16 +67,12 @@ async function login(ctx, next) {
         })
     } else {
         Util.returnApi(ctx, {
-            code: 201,
             data: {},
+            code: 201,
             msg: "登录失败"
         })
     }
 
-
-    console.log(typeof resultObj);
-
-    console.log( resultObj);
 
 }
 

@@ -28,43 +28,41 @@ async function login(ctx, next) {
     let code = body.code;
     var resultStr = await getOpenId(code);
     var resultObj = JSON.parse(resultStr);
-    //如果存在session_key,说明登录成功
+    //如果存在session_key,则向wx服务器获取成功
     if (resultObj.session_key) {
-        var userModelRes = await userModel.find({ "wxOpenId": resultObj.openid },{userId:1});
-        if (Util.judgeTrue(userModelRes)) {
 
+        //根据wxOpenid查库，如果存在，则取回userId存到session，否则新建一个用户、查库、存session
+        var userModelRes = await userModel.find({ "wxOpenId": resultObj.openid }, { userId: 1 });
+        if (Util.judgeTrue(userModelRes)) {
             resultObj["userId"] = userModelRes[0]["userId"];
             resultStr = JSON.stringify(resultObj);
         } else {
             var user = new userModel({
                 wxOpenId: resultObj.openid
             });
-
             var saveRes = await user.save();
             if (saveRes) {
                 let userModelRes = await userModel.find({ "wxOpenId": resultObj.openid }, { usrId: 1 });
                 if (Util.judgeTrue(userModelRes)) {
                     resultObj["userId"] = userModelRes[0]["userId"];
                     resultStr = JSON.stringify(resultObj);
-                } 
+                }
             }
         }
 
-
-
         //生成3rd_session_key就是redisKey
         var redisKey = Util.md5Decode(resultStr);
-
 
         let setResult = await redis.set(redisKey, resultStr, 'EX', 7200);
 
         Util.returnApi(ctx, {
             code: 200,
             data: {
-                session_key : redisKey
+                session_key: redisKey
             },
             msg: "获取session_key成功"
         })
+
     } else {
         Util.returnApi(ctx, {
             data: {},

@@ -74,7 +74,8 @@ var publishSchema = new Schema({
     "tagName": {
         type: String,
         required: true,
-        maxlength: 10
+        maxlength: 10,
+        index: true
     },
 
     //赞数量

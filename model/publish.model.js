@@ -9,12 +9,12 @@ autoIncrement.initialize(mongoose.connection);
 
 var publishSchema = new Schema({
 
-    //发布id
-    "publishId": {
-        type: Number,
-        required: true,
-        index: true
-    },
+    // //发布id
+    // "publishId": {
+    //     type: Number,
+    //     required: true,
+    //     index: true
+    // },
 
     // 发布日期
     "create_at": {
@@ -45,7 +45,7 @@ var publishSchema = new Schema({
 
     //图片地址数组
     "imgUrls": {
-        type: [String]
+        type: Array
     },
 
     //地址

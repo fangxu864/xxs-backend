@@ -101,6 +101,14 @@ var Util = {
         //能够走到这步说明有session信息，返回回去
         return JSON.parse(redisRes);
 
+    },
+
+    getObjLastKey: function (obj) {
+        var arr = []
+        for (var key in obj) {
+            arr.push(key);
+        }
+        return arr[arr.length - 1];
     }
 
 

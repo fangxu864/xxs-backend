@@ -6,34 +6,50 @@ async function publish(ctx, next) {
 
     var body = ctx.request.body;
 
+    console.log(body);
+
     //登录校验，获取用户信息
     var loginInfo = await Util.loginCheck(ctx);
 
     //如果没登录信息，结束
     if (!loginInfo) return false;
 
-    console.log(typeof body);
-    console.log("--body---", body);
 
     var sessionKey = ctx.request.header["session-key-xxs"];
     var sessionInfo = await redis.get(sessionKey);
-    console.log(sessionKey);
-    console.log(sessionInfo);
-    console.log(JSON.parse(sessionInfo));
+
 
 
     var publishData = Object.assign({
         publishStatus: 2,
         publishUser: JSON.parse(sessionInfo).userId
-    },body)
+    }, body)
 
     var publish = new publishModel(publishData);
+    var error = publish.validateSync();
+
+    if (error) {
+        console.log("-----------error-------------",error);
+        var errorMsg = error.errors[Util.getObjLastKey(error.errors)].message;
+        // console.log(error);
+        Util.returnApi(ctx,{
+            code: 201,
+            msg: errorMsg
+        })
+        return false;
+    }
+
+    // console.log(error);
+
     var saveRes = await publish.save();
 
-    console.log(saveRes);
+    console.log("------------------------------------saveRes-----------------------",saveRes);
 
-    ctx.response.body = "121212"
- 
+    Util.returnApi(ctx,{
+        code: 200,
+        msg: "发布成功"
+    })
+
 }
 
 var publishController = {

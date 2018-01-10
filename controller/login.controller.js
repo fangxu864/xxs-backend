@@ -26,6 +26,15 @@ function getOpenId(code) {
 async function login(ctx, next) {
     let body = ctx.request.body;
     let code = body.code;
+
+    if (!code) {
+        Util.returnApi(ctx, {
+            code: 201,
+            data: {},
+            msg: "code缺失"
+        })
+    }
+
     var resultStr = await getOpenId(code);
     var resultObj = JSON.parse(resultStr);
     //如果存在session_key,则向wx服务器获取成功
